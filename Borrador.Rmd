@@ -1,11 +1,26 @@
 ---
 title: "Borrador"
 author: "Jennifer Salazar"
-output: html_document
+output: powerpoint_presentation
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Falta hacer esto
+
+Defina la variable de la serie, su unidad de medida, su construcción e interpretacion de sus cifras, per´ıodos observados, frecuencia de observaci´on, total de observaciones y fuente de los datos.
+
+
+
+# Librerias utiles
+
+```{r}
+library(forecast)
+library(TSA)
+library(fANCOVA)
 ```
 
 
@@ -14,6 +29,7 @@ datos <- read.table("anex-EMMET-dic2019-Fabricacion de otros productos quimicos 
 ```
 
 
+# 2. Analisis descriptivo de la serie y modelos propuestos:
 
 Serie
 
@@ -30,4 +46,19 @@ serie
 ```{r}
 plot(serie)
 ```
+
+
+
+
+## Nota 2: En el caso aditivo realice la gr´afica de la componente de tendencia, ası:
+
+```{r}
+Tt=decompose(serie)$trend
+plot(Tt,ylim=c(min(serie),max(serie)))
+```
+
+
+
+
+
 
