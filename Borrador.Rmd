@@ -1,0 +1,33 @@
+---
+title: "Borrador"
+author: "Jennifer Salazar"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+datos <- read.table("anex-EMMET-dic2019-Fabricacion de otros productos quimicos (1).csv", sep=";", skip=14, header = TRUE, dec = ",")
+```
+
+
+
+Serie
+
+
+```{r}
+serie <- datos$Producción..nominal
+
+serie <- ts(serie, frequency = 12, start = c(2001, 1))
+serie
+```
+
+
+
+```{r}
+plot(serie)
+```
+
