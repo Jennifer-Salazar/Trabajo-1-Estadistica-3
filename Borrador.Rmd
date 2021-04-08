@@ -24,40 +24,317 @@ library(fANCOVA)
 ```
 
 
+
 ```{r}
-datos <- read.table("anex-EMMET-dic2019-Fabricacion de otros productos quimicos (1).csv", sep=";", skip=14, header = TRUE, dec = ",")
+Datos20
 ```
 
 
 # 2. Analisis descriptivo de la serie y modelos propuestos:
 
-Serie
 
 
 ```{r}
-serie <- datos$Producción..nominal
+plot(Datos20)
+```
 
-serie <- ts(serie, frequency = 12, start = c(2001, 1))
-serie
+
+
+## Descomposición aditiva (tendencia)
+
+* La serie es de componentes aditivas dado que su varianza es constante alrededor de su trayectoria de largo plazo(tendencia).
+
+
+```{r}
+Tt=decompose(Datos20)$trend
+plot(Tt,ylim=c(min(Datos20),max(Datos20)))
+```
+
+* es visible que la serie es de tendencia creciente y que existen ciclos.
+
+
+##  grafico de boxplots comparativos de la distribucion de la serie versus perıodos del año calendario
+
+
+```{r}
+boxplot(Datos20~cycle(Datos20), names=month.abb)
+grid()
+```
+
+* vemos cómo la media en particular la mediana de la distribución de la serie según periodo del año, cambia a lo largo de un año calendario siendo menor en los meses de enero, febrero, abril y diciembre comparados con el resto del año. Tiene un crecimiento de enero a marzo y luego vuelve y baja en abril  para volver a subir en mayo manteniendose relativamente al mismo nivel en los siguientes meses hasta noviembre, para luego decaer en diciembre y retormar el siguiente año.
+
+
+## Periodograma
+
+
+```{r}
+periodogram(diff(Datos20),lwd=4) #periodograma sobre los logaritmos diferenciados
+abline(v=c(1:6)/12,col=2,lty=2)
+grid()
+```
+
+
+el periodograma muestra la asociacion de la serie con cuatro componentes periodicas (por valor alto del periodograma en esas frecuencias): en las frecuencias 1/12 y 2/12, 3/12, 4/12.
+
+
+# justifique por que existe componente estacional y si su forma es constante o no en el tiempo. 
+
+- Mediante el gráfico de la serie vs el tiempo se ve un patrón que se repite cada año; pues en cada año se observa que en los meses del inicio y del final el índice de producción nominal es bajo y tiene aproximadamente 2 picos de decaimiento en el transcurso del año.
+
+- Dado que en el gráfico de boxplot al menos una de las medias de los meses cambia respecto al resto de los meses del año calendario, por lo tanto se concluye que cada periodo en que se divide el año calendario determina una estación, la cual tiene incidencia sobre el valor medio de la serie, por ellos se dice que existe la componente estacional.
+
+- Mediante el periodograma se resalta que hay una asociación de la serie con fenomenos periodicos, indicando la existencia de una componente estacional.
+
+
+## Es la estacionalidad constante o no en el tiempo:
+
+```{r}
+par(mfrow=c(2,2))
+plot(Datos20, xlim=c(2001,2005))
+plot(Datos20, xlim=c(2006,2010))
+plot(Datos20, xlim=c(2011,2015))
+plot(Datos20, xlim=c(2016,2019))
+
+```
+
+Estamos en desacuerdo, lo respondemos más tarde.
+
+## la tendencia se puede ajustar globalmente o si es local.
+
+- La tendencia de la serie es global ya que se puede ajustar una curva suave creciente en todos los tiempos de la serie, También se puede ajustar modelos locales para comparar los ajustes y pronosticos respecto a la ajuste global.
+
+
+
+##  identificacion de posibles ciclos y cambios estructurales.
+
+* Hay presencia de ciclos en la serie a tráves del tiempo ya que al aplicar la descomposición aditiva y obtener la tendencia, no se observa una curva suave que describa la tendencia de la serie.
+* Hay aproximadamente entre 4 y 5 ciclos en la serie a través del tiempo (montañas).
+* No hay presencia de cambios estructurales en la serie.
+
+
+
+
+#################################################################################
+
+
+# Modelos propuestos
+
+
+
+
+Por el análisis descriptivo, para los modelos globales la tendencia en escala logaritmo natural puede ser ajustada por un polinomio de grado $p = 2, 3$ y la componente estacional puede representarse como un factor y por tanto usar
+variables indicadoras en los modelos globales. Se proponen los siguientes modelos de regresión, donde t es el índice de tiempo y $I_{i,t}$ es la indicadora del trimestre i en el tiempo t.
+
+
+## Modelo 1: Modelo cuadrático estacional con indicadoras, mes de referencia diciembre
+
+$$Y_t=\beta_0+\beta_1t+\beta_2t^2+\sum_{i=1}^{12}\delta_iI_{i,t}+E_t, ~~~ E_t \sim iid N(0, \sigma^2)$$
+
+## Modelo 2: Modelo cúbico estacional con indicadoras, mes de referencia diciembre
+
+$$Y_t=\beta_0+\beta_1t+\beta_2t^2+\beta_3t^3+\sum_{i=1}^{12}\delta_iI_{i,t}+E_t, ~~~ E_t \sim iid N(0, \sigma^2)$$
+
+## Modelos 3: Descomposición aditiva & Loess cuadrático
+
+En la vecindad de un tiempo $t_k$ donde se quiere ajustar, $Y_t = \beta_{0,k} + \beta_{1,k}t + \beta_{2,k}t^2 + \sum_{i=1}^{12}\delta_i I_{i,t} +  E_t, ~~ E_t \sim iid N(0,\sigma^2)$ para todo t vecino a $t_k$, con $\sum_{i=1}^{12}\delta_i=0,~~~ \beta_{0,k},~\beta_{1,k}~y~\beta_{2,k}$ los parametros de la parabola local en la vecindad de $t_k$
+
+
+## Modelo 4: Suavizamiento exponencial Holt-Winters aditivo
+
+$Y_{t+h} = \beta_{0,t} + \beta_{1,t}\times h + \sum_{i=1}^{12}\delta_{i,t} I_{i,t+h} +  E_{t+h}, ~~ E_t \sim iid N(0,\sigma^2)$, con $\sum_{i=1}^{12}\delta_{i,t}=0,~~\beta_{0,t}~y~\beta_{1,t}~y~\delta_{i,t}$, el nivel en $t$, la pendiente en $t$ y los efectos estacionales en $t$, respectivamente, cambiando lentamente en el tiempo.
+
+
+
+
+## Ajuste de los modelos con validación cruzada
+
+
+```{r}
+m <- 12 # numero de periodos a pronosticar dentro de la muestra
+n <-length(Datos20)-m # tamaño de la muestra para el ajuste
+t <- 1:n #Indice de tiempo en los periodos de ajuste
+```
+
+
+* Datos para el ajuste:
+
+```{r}
+yt <- ts(Datos20[t], frequency = 12, start=c(2001, 1))
+```
+
+
+* Definiendo factor para estacionalidad pero solo para la regresion lineal modelo 1
+
+* Creación de las variables indicadoras para los datos de muestra
+```{r}
+mes <- seasonaldummy(yt) #Matriz con las 11 primeras variables Indicadoras mes
+
+
+#Separando una a una las 11 variables indicadoras
+
+I1 <- mes[,1]
+I2 <- mes[,2]
+I3 <- mes[,3]
+I4 <- mes[,4]
+I5 <- mes[,5]
+I6 <- mes[,6]
+I7 <- mes[,7]
+I8 <- mes[,8]
+I9 <- mes[,9]
+I10 <- mes[,10]
+I11 <- mes[,11]
+```
+
+
+* Creación de las variables indicadoras para los datos de validación cruzada
+
+
+```{r}
+tnuevo <- (n+1):length(Datos20)
+ytnuevo <- ts(Datos20[tnuevo], frequency = 12, start = c(2019, 1))
+
+
+mesnuevo <- seasonaldummy(yt, h=12)
+#Separando una a una las 11 indicadoras para los tiempos de pron?stico
+I1n=mesnuevo[,1]
+I2n=mesnuevo[,2]
+I3n=mesnuevo[,3]
+I4n=mesnuevo[,4]
+I5n=mesnuevo[,5]
+I6n=mesnuevo[,6]
+I7n=mesnuevo[,7]
+I8n=mesnuevo[,8]
+I9n=mesnuevo[,9]
+I10n=mesnuevo[,10]
+I11n=mesnuevo[,11]
+```
+
+
+
+## Ajuste del modelo 1 Modelo cuadrático estacional con indicadoras
+
+
+```{r}
+mod1 <- lm(yt~t+I(t^2)+I1+I2+I3+I4+I5+I6+I7+I8+I9+I10+I11)
+summary(mod1)
+```
+
+
+## Ajuste del modelo 2 Modelo cúbico estacional con indicadoras
+
+
+```{r}
+mod2 <- lm(yt~t+I(t^2)+I(t^3)+I1+I2+I3+I4+I5+I6+I7+I8+I9+I10+I11)
+summary(mod2)
+```
+
+
+## Funciones a utilizar:
+
+```{r}
+#Creando función para extraer correctamente estimaciones de los efectos estacionales 𝜹𝒊 por filtro de descomposición
+factoresdeltai=function(descom,s,estacionini){
+if(estacionini==1){
+deltasi=descom$figure
+}
+if(estacionini!=1){
+j=estacionini;deltasi=c(descom$figure[(s-j+2):s],descom$figure[1:(s-j+1)])
+}
+deltasi
+}
+```
+
+
+## Ajuste modelo 3 Descomposición aditiva & Loess cuadrático
+
+
+```{r}
+#Descomposición aditiva de la serie recortada
+descom=decompose(yt,type="additive")
 ```
 
 
 
 ```{r}
-plot(serie)
+s=12 #Longitud del periodo estacional
 ```
 
 
-
-
-## Nota 2: En el caso aditivo realice la gr´afica de la componente de tendencia, ası:
 
 ```{r}
-Tt=decompose(serie)$trend
-plot(Tt,ylim=c(min(serie),max(serie)))
+#Componente estacional estimada de la descomposición de la serie recortada
+St=descom$seasonal
+
+
+deltas_i=factoresdeltai(descom=descom,s=12,estacionini=1) #Obteniendo los s factores estacionales estimados
+
+
+#el período es s=12 y la serie arranca en estación 1
+data.frame(deltas_i)
 ```
 
 
+
+```{r}
+#Pronósticos para la componente estacional usando estimaciones del filtro de descomposición clásica
+
+#los pronósticos inician en enero 2019 y terminan en diciembre 2019
+
+i=c(1,2,3,4,5,6,7,8,9,10,11,12) #identificando la estación correspondiente a los m=12 períodos de pronósticos
+```
+
+
+
+
+```{r}
+Stnuevo=deltas_i[i] #Asignando el valor de St a los períodos a pronosticar
+Stnuevo=ts(Stnuevo,frequency=12,start=c(2019,1)) #convirtiendo en serie de tiempo al pronóstico de St
+Stnuevo
+```
+
+```{r}
+#Desestacionalizando o ajustando estacionalmente a la serie recortada, según modelo aditivo
+ytd=yt-St
+```
+
+
+
+```{r}
+#LOESS cuadrático (AICC) sobre serie desestacionalizada
+ajusteLoess2=loess.as(t,ytd,degree=2,criterion="aicc",family="gaussian",plot=F)
+summary(ajusteLoess2)
+alfa.optim2=ajusteLoess2$pars$span #guardando el valor óptimo del parámetro alfa
+```
+
+
+
+
+## Ajuste modelo 4 con método Suavizamiento exponencial Holt-Winters aditivo
+
+### Modelo de tendencia con cambio de nivel y pendiente, aditiva a factor estacional con efectos que evolucionan lentamente en el tiempo
+
+```{r}
+suav=HoltWinters(yt,seasonal="additive") #Suavizamiento con valores óptimos en parámetros 𝜶, 𝜷, 𝜸
+suav
+```
+
+
+# Valores ajustados de los modelos 
+
+
+Modelo 1
+
+```{r}
+mod1_ajust <- fitted(mod1)
+```
+
+
+```{r}
+plot(Datos20)
+lines(mod1_ajust, col=2, lwd=2)
+legend("topleft", legend = c("Original", "Ajuste del modelo1"), lty=1, col=c(1,2))
+
+```
 
 
 
