@@ -618,7 +618,6 @@ legend("topleft", legend=c("Modelo4"), lty=1, col = 1, lwd=2)
 
 ```
 
-
 ```{r}
 
 par(mfrow=c(2,2))
@@ -626,25 +625,162 @@ par(mfrow=c(2,2))
 
 plot(fitted(mod1), residuals(mod1))
 abline(h=c(-2*summary(mod1)$sigma, 0, 2*summary(mod1)$sigma), col=2)
-legend("topleft", legend=c("Modelo1"), lty=1, col = 1, lwd=2)
+legend("topleft", legend=c("Modelo1"), lty=1, col = 1, lwd=2,cex = 0.8)
 
 
 # Residuales vs valores ajustados mod2
 
 plot(fitted(mod2), residuals(mod2))
 abline(h=c(-2*summary(mod2)$sigma, 0, 2*summary(mod2)$sigma), col=2)
-legend("topleft", legend=c("Modelo2"), lty=1, col = 1, lwd=2)
+legend("topleft", legend=c("Modelo2"), lty=1, col = 1, lwd=2,cex = 0.8)
 
 # Residuales vs valores ajustados mod3
 plot(as.numeric(mod3_ajust),et3,ylim=c(min(-2*sqrt(MSE3),et3),max(2*sqrt(MSE3),et3)))
 abline(h=c(-2*sqrt(MSE3),0,2*sqrt(MSE3)),col=2)
-legend("topleft", legend=c("Modelo3"), lty=1, col = 1, lwd=2)
+legend("topleft", legend=c("Modelo3"), lty=1, col = 1, lwd=2,cex = 0.8)
 
 # Residuales vs valores ajustados mod4
 
 plot(as.numeric(mod4_ajust),et4,ylim=c(min(-2*sqrt(MSE4),et4),max(2*sqrt(MSE4),et4)))
 abline(h=c(-2*sqrt(MSE4),0,2*sqrt(MSE4)),col=2)
-legend("topleft", legend=c("Modelo4"), lty=1, col = 1, lwd=2)
+legend("topleft", legend=c("Modelo4"), lty=1, col = 1, lwd=2,cex = 0.8)
 ```
+
+* Sobre el supuesto de media cero para los errores de ajuste ¿qué se concluye en los cuatro modelos?
+
+En las figuras presentadas en las gráficas de residuos vs. tiempo y vs. valores ajustados, no se observa evidencia contra el supuesto de que los errores tienen media cero (a pesar de la variación cíclica alrededor de cero, que se observa en las series de tiempo de los residuos de los modelos globales), pues en todos los casos los residuos parecen bien centrados en cero.
+
+
+* ¿Es válido el supuesto de varianza constante en los 4 modelos?
+
+Se observa una distribución relativamente homogénea de los residuos alrededor de cero, es decir, no hay evidencias contrariando el supuesto de varianza constante para los errores de ajuste 
+
+
+* ¿Hay patrones en los residuos que indiquen carencia de ajuste de los modelos en la tendencia y/o la estacionalidad?
+
+No hay evidencia de carencia de ajuste severa en las componentes estructurales (o sea en tendencia y estacionalidad), pues en los residuos vs. valores ajustados no se observan patrones claros con forma de U o de W que indiquen mal ajuste de la tendencia, ni patrones periódicos en las gráficas de las series de tiempo de residuos de ajuste que indiquen mal ajuste de la estacionalidad.
+
+
+* ¿Hay ciclos presentes en los residuales? ¿qu´e se deriva de estos patrones?
+
+En las series de tiempo de los residuos de los modelos globales hay evidencia de ciclos no explicados (los cuales se dan centrados en cero), esto implica que los errores en los modelos globales, separados un periodo en el tiempo, están positivamente correlacionados, es decir, $Corr(E_t,E_{t+1}) > 0$, por lo cual ya no es válido el supuesto de independencia.
+
+Por el contrario, en las series de tiempo de los residuos de los dos modelos locales no son observables a simple vista patrones cíclicos, aunque esto no es una garantía suficiente para afirmar la validez de la independencia entre los errores de ajuste de estos dos modelos, es un punto su favor.
+
+
+* ¿Qué hacen mejor los métodos locales vs. los globales?
+
+Los métodos locales logran seguir ciclos, por eso son mejores que los modelos globales.
+
+
+* ¿Cuál es el mejor modelo de los cuatro, de acuerdo al análisis de los residuales?
+
+Con todo lo antes dicho, de los 4 modelos, se considera que los modelos de ajuste local son mejores, ya que en ellos no hay patrones cíclicos y por tanto dan indicios de cumplir el supuesto de independencia.
+
+
+# 5. Pronósticos para la validación cruzada: Para todos los modelos de ajuste global y local presentados, presente los resultados y análisis de pronósticos puntuales y por intervalos.
+
+#### Hacer tabla de ecuaciones de pronóstico
+#### Tabla con los pronósticos
+
+$$\hat{Y}_{216} = $$
+
+Modelo 1
+
+```{r}
+ytpron1 <- predict(mod1, newdata=data.frame(t=tnuevo, I1=I1n, I2=I2n, I3=I3n, I4=I4n, I5=I5n, I6=I6n, I7=I7n, I8=I8n, I9=I9n, I10=I10n, I11=I11n), interval="prediction")
+ytpron1
+```
+
+Modelo 2
+
+```{r}
+ytpron2 <- predict(mod2, newdata=data.frame(t=tnuevo, I1=I1n, I2=I2n, I3=I3n, I4=I4n, I5=I5n, I6=I6n, I7=I7n, I8=I8n, I9=I9n, I10=I10n, I11=I11n), interval="prediction")
+ytpron2
+```
+
+
+Modelo 3
+
+```{r}
+#Pronósticos de la tendencia por loess cuadrático óptimo (AICC)
+Ttnuevo3 <- predict(loess(ytd~t,span=alfa.optim2,degree=2,control=loess.control(surface="direct")),
+data.frame(t=tnuevo),se=FALSE)
+Ttnuevo3 <- ts(Ttnuevo3,freq=12,start=c(2019,1)) #convirtiendo en serie de tiempo al pronóstico de Tt, modelo 3
+ytpron3 <- Ttnuevo3 + Stnuevo #Pronóstico puntual Modelo 2
+#Tabla con pronósticos de las componentes y de la serie, Modelo 2
+tablapron3 <- cbind(Pron_Tt=Ttnuevo3,Pron_St=Stnuevo,Pron_serie=ytpron3)
+tablapron3
+```
+
+Modelo 4
+
+```{r}
+pronos4 <- predict(mod4, n.ahead=12,prediction=T,level=0.95)
+ytpron4 <- pronos4[,1] #sólo los pronósticos puntuales del suavizamiento
+pronos4
+```
+
+Preguntas orientadas
+
+* ¿Cuál es la interpretación de los pronósticos puntuales y sus I.P? Ejemplificar con una fecha y comparar entre modelos.
+
+La producción nominal de la categoría otros productos químicos para el mes de Junio de 2019, comparado con los meses del año 2018 es de:
+
++ En el __modelo global cuadrático__ : 109.59040 % es decir, durante este periodo aumentó un 9.59%. Además, con un 95% de confianza el valor real del índice se encuentra entre 101.46257 y 117.9377. 
+
++ En el __modelo global cúbico__ : 110.57743% es decir, durante este periodo aumentó aproximadamente un 10.57%. Además, con un 95% de confianza el valor real del índice se encuentra entre 102.12208 y 119.0328 .
+
++ En el __modelo local con Descomposición aditiva & Loess cuadrático (DLC)__ : 109.12959 es decir, durante este periodo aumentó aproximadamente un 9.13%.
+
++ En el __modelo local aditivo con SEHW__: 107.96878% es decir, durante este periodo aumentó aproximadamente un 7.9%. Además, con un 95% de confianza el valor real del índice se encuentra entre 99.45046 y 116.48710  
+
+* ¿Cuál es la interpretación de las medidas MAE, MAPE y RMSE? ¿según estas medidas cuál modelo pronostica mejor?
+
+
+* Con base en la amplitud media y cobertura de los I.P ¿qué se concluye?
+
+* ¿Qué se concluye de la figura comparativa de los pronósticos puntuales?
+
+
+
+# 6. Conclusiones del trabajo: 
+
+En esta sección debe presentar un resumen de los resultados encontrados en el respectivo trabajo, así como enunciar los problemas enfrentados en la modelación, postular cuál ha sido el mejor modelo en ajuste y pronóstico entre los tratados y comentar acerca de lo que usted crea que logró este mejor modelo:
+
+* ¿Capturó la dinámica de la serie?
+
+* ¿Su tendencia, estacionalidad y sus variaciones cíclicas son bien ajustadas?
+
+* ¿Los pronósticos parecen realistas y confiables?
+
+* ¿Qué otras alternativas podrían haberse propuesto?
+
+* ¿Críticas al mejor modelo que encontró en el trabajo actual? 
+
+* Exprese claramente qué recomienda para la serie en cuanto a ajustes globales o locales, según lo realizado hasta el momento.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
