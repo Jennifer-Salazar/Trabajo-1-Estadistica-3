@@ -74,7 +74,7 @@ grid()
 ```
 
 
-el periodograma muestra la asociacion de la serie con cuatro componentes periodicas (por valor alto del periodograma en esas frecuencias): en las frecuencias 1/12 y 2/12, 3/12, 4/12.
+el periodograma muestra la asociacion de la serie con cinco componentes periodicas (por valor alto del periodograma en esas frecuencias): en las frecuencias 1/12 y 2/12, 3/12, 4/12, 6/12.
 
 
 # justifique por que existe componente estacional y si su forma es constante o no en el tiempo. 
@@ -122,17 +122,16 @@ Estamos en desacuerdo, lo respondemos más tarde.
 
 
 
-Por el análisis descriptivo, para los modelos globales la tendencia en escala logaritmo natural puede ser ajustada por un polinomio de grado $p = 2, 3$ y la componente estacional puede representarse como un factor y por tanto usar
-variables indicadoras en los modelos globales. Se proponen los siguientes modelos de regresión, donde t es el índice de tiempo y $I_{i,t}$ es la indicadora del trimestre i en el tiempo t.
+Por el análisis descriptivo, para los modelos globales la tendencia puede ser ajustada por un polinomio de grado $p = 2, 3$ y la componente estacional puede representarse como un factor y por tanto usar  variables indicadoras en los modelos globales. Se proponen los siguientes modelos de regresión, donde t es el índice de tiempo y $I_{i,t}$ es la indicadora del trimestre i en el tiempo t.
 
 
 ## Modelo 1: Modelo cuadrático estacional con indicadoras, mes de referencia diciembre
 
-$$Y_t=\beta_0+\beta_1t+\beta_2t^2+\sum_{i=1}^{12}\delta_iI_{i,t}+E_t, ~~~ E_t \sim iid N(0, \sigma^2)$$
+$$Y_t=\beta_0+\beta_1t+\beta_2t^2+\sum_{i=1}^{11}\delta_iI_{i,t}+E_t, ~~~ E_t \sim iid N(0, \sigma^2)$$
 
 ## Modelo 2: Modelo cúbico estacional con indicadoras, mes de referencia diciembre
 
-$$Y_t=\beta_0+\beta_1t+\beta_2t^2+\beta_3t^3+\sum_{i=1}^{12}\delta_iI_{i,t}+E_t, ~~~ E_t \sim iid N(0, \sigma^2)$$
+$$Y_t=\beta_0+\beta_1t+\beta_2t^2+\beta_3t^3+\sum_{i=1}^{11}\delta_iI_{i,t}+E_t, ~~~ E_t \sim iid N(0, \sigma^2)$$
 
 ## Modelos 3: Descomposición aditiva & Loess cuadrático
 
@@ -301,9 +300,9 @@ ytd=yt-St
 
 ```{r}
 #LOESS cuadrático (AICC) sobre serie desestacionalizada
-ajusteLoess2=loess.as(t,ytd,degree=2,criterion="aicc",family="gaussian",plot=F)
-summary(ajusteLoess2)
-alfa.optim2=ajusteLoess2$pars$span #guardando el valor óptimo del parámetro alfa
+mod3=loess.as(t,ytd,degree=2,criterion="aicc",family="gaussian",plot=F)
+summary(mod3)
+alfa.optim2=mod3$pars$span #guardando el valor óptimo del parámetro alfa
 ```
 
 
@@ -314,8 +313,8 @@ alfa.optim2=ajusteLoess2$pars$span #guardando el valor óptimo del parámetro al
 ### Modelo de tendencia con cambio de nivel y pendiente, aditiva a factor estacional con efectos que evolucionan lentamente en el tiempo
 
 ```{r}
-suav=HoltWinters(yt,seasonal="additive") #Suavizamiento con valores �ptimos en par�metros 𝜶, 𝜷, 𝜸
-suav
+mod4=HoltWinters(yt,seasonal="additive") #Suavizamiento con valores ?ptimos en par?metros 𝜶, 𝜷, 𝜸
+mod4
 ```
 
 
@@ -353,14 +352,14 @@ legend("topleft", legend = c("Original", "Ajuste del modelo2"), lty=1, col=c(1,2
 modelo 3
 
 ```{r}
-mod3_ajust <- ts(fitted(ajusteLoess2), start  = c(2001,1), frequency = 12)
-ythat1 <- mod3_ajust + St # Ajuste D&LC(AICC)
+mod3_Tt <- ts(fitted(mod3), start  = c(2001,1), frequency = 12)
+mod3_ajust <- mod3_Tt + St # Ajuste D&LC(AICC)
 ```
 
 
 ```{r}
 plot(Datos20)
-lines(ythat1, col=2, lwd=2)
+lines(mod3_ajust, col=2, lwd=2)
 legend("topleft", legend = c("Original", "Ajuste D&LC(AICC)"), lty=1, col=c(1,2))
 
 ```
@@ -371,8 +370,9 @@ legend("topleft", legend = c("Original", "Ajuste D&LC(AICC)"), lty=1, col=c(1,2)
 Modelo 4
 
 ```{r}
+mod4_ajust <- fitted(mod4)[,1]
 plot(Datos20)
-lines(fitted(suav)[,1], col=2, lwd=2)
+lines(mod4_ajust, col=2, lwd=2)
 legend("topleft", legend=c("Original","Ajuste H-W"), col=c(1,2), lty=1)
 ```
 
@@ -395,9 +395,9 @@ CI
 
 modelo 1
 ```{r}
-resmod1.orig <- residuals(mod1) #seudo-residuos en la escala original. Usados s�lo para calcular AIC y BIC
+resmod1.orig <- residuals(mod1) #seudo-residuos en la escala original. Usados s?lo para calcular AIC y BIC
 
-npar1 <- length(coef(mod1)[coef(mod1)!=0]) #n�mero par�metros modelo 1
+npar1 <- length(coef(mod1)[coef(mod1)!=0]) #n?mero par?metros modelo 1
 
 aic1 <- exp(crit.inf.resid(resmod1.orig,n.par=npar1))
 bic1 <- exp(crit.inf.resid(resmod1.orig ,n.par=npar1, AIC="FALSE"))
@@ -405,9 +405,9 @@ bic1 <- exp(crit.inf.resid(resmod1.orig ,n.par=npar1, AIC="FALSE"))
 
 modelo 2
 ```{r}
-resmod2.orig <- residuals(mod2) #seudo-residuos en la escala original. Usados s�lo para calcular AIC y BIC
+resmod2.orig <- residuals(mod2) #seudo-residuos en la escala original. Usados s?lo para calcular AIC y BIC
 
-npar2 <- length(coef(mod2)[coef(mod2)!=0]) #n�mero par�metros modelo 1
+npar2 <- length(coef(mod2)[coef(mod2)!=0]) #n?mero par?metros modelo 1
 
 aic2 <- exp(crit.inf.resid(resmod1.orig,n.par=npar2))
 bic2 <- exp(crit.inf.resid(resmod1.orig ,n.par=npar2, AIC="FALSE"))
@@ -417,27 +417,30 @@ modelo 3
 ```{r}
 et3 <- yt - mod3_ajust
 
-p3 <- round(ajusteLoess2$enp)+s-1
+p3 <- round(mod3$enp)+s-1
 AIC3 <- exp(crit.inf.resid(residuales=et3,n.par=p3))
 BIC3 <- exp(crit.inf.resid(residuales=et3,n.par=p3,AIC="FALSE"))
 ```
 
 modelo 4
 ```{r}
-p4 <- (s-1)+2 #Aprox. del n�mero de par�metros del suavizamiento
-AIC4 <- exp(crit.inf.resid(residuales=residuals(suav),n.par=p4))
-BIC4 <- exp(crit.inf.resid(residuales=residuals(suav),n.par=p4,AIC="FALSE"))
+p4 <- (s-1)+2 #Aprox. del n?mero de par?metros del suavizamiento
+AIC4 <- exp(crit.inf.resid(residuales=residuals(mod4),n.par=p4))
+BIC4 <- exp(crit.inf.resid(residuales=residuals(mod4),n.par=p4,AIC="FALSE"))
 ```
+
+
+
 
 
 # Preguntas orientadas para los analisis
 ## hacer tablas de los summary
 
- * En los modelos globales �Son significativos el polinomio considerado y la componente estacional con la representaci�n que fue usada?
+ * En los modelos globales ¿Son significativos el polinomio considerado y la componente estacional con la representación que fue usada?
 
 Modelo 1
 
-Debido a que el valor ajustado para el coeficiente correspondiente al grado 2 del polinomio tiene un p-valor muy peque�o(menor a 0.05), se dice que es significativo y por lo tanto la estructura del polinomio cuadratico es significativa.
+Debido a que el valor ajustado para el coeficiente correspondiente al grado 2 del polinomio tiene un p-valor muy peque?o(menor a 0.05), se dice que es significativo y por lo tanto la estructura del polinomio cuadratico es significativa.
 Por otro lado, ya que al menos uno de los coeficientes estimados asociados a las variables indicadoras, son significativos(p-valor menor a 0.05), en este caso todos, se concluye que la componente estacional es significativa.
 
 Modelo 2
@@ -445,12 +448,19 @@ Modelo 2
 Debido a que el valor ajustado para el coeficiente correspondiente al grado 3 del polinomio tiene un p-valor grande(mayor a 0.05), se dice que no es significativo y por lo tanto la estructura del polinomio cubico no es significativa.
 Por otro lado, ya que al menos uno de los coeficientes estimados asociados a las variables indicadoras, son significativos(p-valor menor a 0.05), en este caso todos, se concluye que la componente estacional es significativa.
 
- * En los modelos globales �Cu�l es la interpretacio�n de las estimaciones de los par�metros estacionales?, �difieren mucho estas estimaciones entre los modelos globales? Adem�s, si se model� con variables indicadoras,grafique en un mismo plano y en la escala original de la serie, el patr�n estacional estimado �Estas estimaciones aproximan apropiadamente el patr�n estacional?
+En los modelos globales ¿Cuál es la interpretación de las estimaciones de los parámetros estacionales?, ¿difieren mucho estas estimaciones entre los modelos globales? Además, si se modelo con variables indicadoras, grafique en un mismo plano y en la escala original de la serie, el patrón estacional estimado ¿Estas estimaciones aproximan apropiadamente el patrón estacional? Esta gráfica puede realizarse de la siguiente manera: Suponga que los modelos son ajustados en R bajo los objetos de nombre mod1 y mod2 respectivamente. Sean p1 y p2 los ordenes de los respectivos polinomios, nparmod1 y nparmod2 el número de parámetros, de cada
+modelo, respectivamente. En el caso aditivo, proceda así:
 
-Ya que la serie es aditiva, los $\delta_i$ es la diferencia entre la media de la serie en el mes i del a�o menos la media en el periodo de referencia, es decir, diciembre.
+Ya que la serie es aditiva, los $\delta_i$ es la diferencia entre la media de la serie en el mes i del año menos la media en el periodo de referencia, es decir, diciembre.
 
 
-__Hacer tabla con las estimaciones de los delta_i__
+(.............Hacer tabla con las estimaciones de los delta_i y dar más conclusiones.....)
+
+```{r}
+summary(mod1)
+summary(mod2)
+```
+
 
 
 ```{r}
@@ -461,37 +471,63 @@ p2 <- 3 # grado del polinomio modelo 2
 efectosestac1 <- ts(c(coef(mod1)[(p1+2):npar1],0),freq=1,start=1)
 efectosestac2 <- ts(c(coef(mod2)[(p2+2):npar2],0),freq=1,start=1)
 #win.graph()
-plot(efectosestac1,lwd=4,ylab="",xlab="Periodo del a�o")
+plot(efectosestac1,lwd=4,ylab="",xlab="Periodo del año")
 lines(efectosestac2,lty=2,col=2,lwd=4)
 legend("topleft",legend=c("Modelo 1","Modelo 2"),col=1:2,lty=1:2,lwd=2)
 ```
 
-Como se interpreta???
 
- * Compare gr�ficamente la forma de la estimaci�n de la componente estacional entre los dos modelos locales(en Holt-Winters se toma el  �ultimo valor suavizado para cada uno de los 12 efectos estacionales) �difieren mucho? Adem�s, si en los modelos globales se usaron indicadoras, compare la forma del patr�n estacional estimado por estos vs. los locales �qu� se interpreta a partir de la similaridad o diferencia entre estas estimaciones?
+Vemos que el mod1 y el mod2 estiman la misma forma para $S_t$ además de que sus valores son muy similares para los efectos estacionales (no son iguales pero tinen diferencias muy pequeñas en las estimaciones de los $\delta_i$)
+
+Como se interpreta??? (...comentar........)
+
+
+
+ * Compare gráficamente la forma de la estimación de la componente estacional entre los dos modelos locales(en Holt-Winters se toma el  último valor suavizado para cada uno de los 12 efectos estacionales) ¿difieren mucho? Además, si en los modelos globales se usaron indicadoras, compare la forma del patrón estacional estimado por estos vs. los locales ¿qué se interpreta a partir de la similaridad o diferencia entre estas estimaciones?
  
  
 ```{r}
-#extracci�n estimaciones en t=216 de efectos estacionales segun Holt-Winters.
+#extracción estimaciones en t=216 de efectos estacionales segun Holt-Winters.
 
-deltasiHW=ts(suav$coef[c(3:14)],freq=1,start=1)#Estimaciones de los efectos estacionales segun filtro de descomposici�on
+deltasiHW=ts(mod4$coef[c(3:14)],freq=1,start=1)#Estimaciones de los efectos estacionales segun filtro de descomposicióon
 
 deltasDescomp=ts(deltas_i,freq=1,start=1)
 deltasilocales=data.frame(rbind(deltasiHW,deltasDescomp),row.names=c("HW","Descomp&loess"))
-names(deltasilocales)=c(1:12)#Gr�fico de los efectos estacionales estimados
-plot(deltasiHW,lwd=4,ylim=c(min(deltasiHW,deltasDescomp),max(deltasiHW,deltasDescomp)+0.05),ylab="",xlab="Mes del a�o")
+names(deltasilocales)=c(1:12)#Gráfico de los efectos estacionales estimados
+
+
+plot(deltasiHW,lwd=4,ylim=c(min(deltasiHW,deltasDescomp),max(deltasiHW,deltasDescomp)+0.05),ylab="",xlab="Mes del año")
 lines(deltasDescomp,lty=2,lwd=4,col=2)
-legend("topleft",legend=c("Efectos estacionales H-W en t=216","Efectos estacionales Filtro de descomposici�n"),col=1:2,lty=1:2,lwd=3)
+legend("topleft",legend=c("Efectos estacionales H-W en t=216","Efectos estacionales Filtro de descomposición"),col=1:2,lty=1:2,lwd=3)
 ```
 
- * Con relaci�n al ajuste loess de la serie desestacionalizada �Qu� se concluye de su gr�fica y del n�mero de par�metros equivalentes loess?
+
+* Se observa que hay algunas diferencias entre las estimaciones "globales" que da el filtro con respecto a "la última estimación local" que da SEHW; sin embargo, la "forma del patrón" estimado es igual. Por lo tanto, $S_t$ en $Y_t$ es más o menos estable en el tiempo.
+
+
+
+```{r}
+plot(efectosestac1,lwd=4,xlab="Periodo del año", ylim =c(-10, 23))
+lines(efectosestac2,lty=2,col=2,lwd=4)
+lines(deltasiHW,lwd=3, col=3)
+lines(deltasDescomp,lty=2,lwd=4,col=4)
+legend("topleft",legend=c("Polinomial cuadrático","Polinomial cúbico", "SEHW","DLC"),col=1:4,lwd=3, cex=0.8)
+```
+
+
+* Vemo que los modelos globales estiman la misma forma de $S_t$ pero con valores diferentes de los efectos estacionales al no coindir los $\delta_i$
+
+<br>
+
+
+Con relación al ajuste loess de la serie desestacionalizada ¿Qué se concluye de su gráfica y del número de parámetros equivalentes loess?
  
-# GR�FICOS DE LA SERIE DESESTACIONALIZADA Y SUS AJUSTES LOESS
+# GRÁFICOS DE LA SERIE DESESTACIONALIZADA Y SUS AJUSTES LOESS
 
 ```{r}
 plot(ytd)
-lines(mod3_ajust, col=2, lwd = 2)
-legend("topleft", legend=c("Serie ajustada estacionalmente", "Tendencia LOESS cuadr�tico (AICC)"), col=c(1,2), lty=1)
+lines(mod3_Tt, col=2, lwd = 2)
+legend("topleft", legend=c("Serie ajustada estacionalmente", "Tendencia LOESS cuadrático (AICC)"), col=c(1,2), lty=1)
 ``` 
 
 
@@ -499,10 +535,116 @@ Se observa que los valores ajustados se acercan a los valores que toma la serie;
 
 Finalmente el ajuste que hace LOESS al final de la serie es creciente, aunque el valor real muestra una tendencia decreciente
 
-Para un ajuste global polinomial alcanzando el mismo ajuste que LOESS, el modelo global deberia ser un polinomial con aproximadamente 13 parametros.
+Para un ajuste global polinomial alcanzando el mismo ajuste que LOESS, el modelo global deberia ser un polinomial con aproximadamente 13 parámetros.
+
+
+<br>
+
+
+¿Qué se concluye sobre la calidad del ajuste de los modelos globales vs. locales? también determine entre los modelos globales cuál modelo recomendaría inicialmente como mejor modelo global para ajustar la serie. Tenga en cuenta no sólo los valores de los criterios de información, sino también los resultados gráficos.
 
 
 
 
+
+```{r}
+par(mfrow=c(2,2))
+plot(Datos20)
+lines(mod1_ajust, col=2, lwd=2)
+legend("topleft", legend = c("Original", "Ajuste del modelo1"), lty=1, col=c(1,2), cex=0.5)
+
+plot(Datos20)
+lines(mod2_ajust, col=2, lwd=2)
+legend("topleft", legend = c("Original", "Ajuste del modelo2"), lty=1, col=c(1,2), cex=0.5)
+
+plot(Datos20)
+lines(mod3_ajust, col=2, lwd=2)
+legend("topleft", legend = c("Original", "Ajuste D&LC(AICC)"), lty=1, col=c(1,2), cex=0.5)
+
+plot(Datos20)
+lines(mod4_ajust, col=2, lwd=2)
+legend("topleft", legend=c("Original","Ajuste H-W"), col=c(1,2), lty=1, cex=0.5)
+```
+
+
+(....... Colocar la tabla de los AIC y BIC de todos los modelos y sacar una conclusión a partir de el)
+
+* En general mediante los gráficos tiene un mejor ajuste los modelos locales que los globales
+
+
+*  Entre los modelos globales se recomienda el modelo cuadrático con indicadoras ya que con un grado menos del polinomio ajusta igual de bien que el cúbico, por tanto se prefiere por ser un modelo más simple (parsimonioso) además que en los ajustes se noto que el grado 3 del polinomio del segundo modelo no es significativo.
+
+
+
+# 4. Análisis de residuales y validación de supuestos: Para todos los modelos ajustados, globales y locales, realice el análisis comparativo de residuales.
+
+
+Gráfico de los residuales en el tiempo
+
+```{r}
+par(mfrow=c(2,2))
+
+# Residuales vs tiempo mod1
+plot.ts(residuals(mod1))
+abline(h=c(-2*summary(mod1)$sigma, 0, 2*summary(mod1)$sigma), col=2)
+legend("topleft", legend=c("Modelo1"), lty=1, col = 1, lwd=2)
+
+
+# Residuales vs tiempo mod2
+plot.ts(residuals(mod2))
+abline(h=c(-2*summary(mod2)$sigma, 0, 2*summary(mod2)$sigma), col=2)
+legend("topleft", legend=c("Modelo2"), lty=1, col = 1, lwd=2)
+
+
+# Residuales vs tiempo mod3
+df=n-(round(mod3$enp)+s-1) #Grados de libertad aproximados del ajuste total
+MSE3=sum(et3^2)/df #MSE aproximado del ajuste total del modelo 3
+plot(et3,ylim=c(min(-2*sqrt(MSE3),et3),max(2*sqrt(MSE3),et3)))
+abline(h=c(-2*sqrt(MSE3),0,2*sqrt(MSE3)),col=2)
+legend("topleft", legend=c("Modelo3"), lty=1, col = 1, lwd=2)
+
+
+# Residuales vs tiempo mod4
+
+et4=residuals(mod4)
+df4=n-2*s-((s-1)+2)
+MSE4=mod4$SSE/df4 #MSE aproximado del ajuste total del Suavizamiento
+
+plot(et4,ylim=c(min(-2*sqrt(MSE4),et4),max(2*sqrt(MSE4),et4)))
+abline(h=c(-2*sqrt(MSE4),0,2*sqrt(MSE4)),col=2)
+legend("topleft", legend=c("Modelo4"), lty=1, col = 1, lwd=2)
+
+
+
+```
+
+
+```{r}
+
+par(mfrow=c(2,2))
+# Residuales vs valores ajustados mod1
+
+plot(fitted(mod1), residuals(mod1))
+abline(h=c(-2*summary(mod1)$sigma, 0, 2*summary(mod1)$sigma), col=2)
+legend("topleft", legend=c("Modelo1"), lty=1, col = 1, lwd=2)
+
+
+# Residuales vs valores ajustados mod2
+
+plot(fitted(mod2), residuals(mod2))
+abline(h=c(-2*summary(mod2)$sigma, 0, 2*summary(mod2)$sigma), col=2)
+legend("topleft", legend=c("Modelo2"), lty=1, col = 1, lwd=2)
+
+# Residuales vs valores ajustados mod3
+plot(as.numeric(mod3_ajust),et3,ylim=c(min(-2*sqrt(MSE3),et3),max(2*sqrt(MSE3),et3)))
+abline(h=c(-2*sqrt(MSE3),0,2*sqrt(MSE3)),col=2)
+legend("topleft", legend=c("Modelo3"), lty=1, col = 1, lwd=2)
+
+# Residuales vs valores ajustados mod4
+
+plot(as.numeric(mod4_ajust),et4,ylim=c(min(-2*sqrt(MSE4),et4),max(2*sqrt(MSE4),et4)))
+abline(h=c(-2*sqrt(MSE4),0,2*sqrt(MSE4)),col=2)
+legend("topleft", legend=c("Modelo4"), lty=1, col = 1, lwd=2)
+```
 
 
