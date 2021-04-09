@@ -1,7 +1,7 @@
 ---
 title: "Borrador"
 author: "Jennifer Salazar"
-output: powerpoint_presentation
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Falta hacer esto
 
-Defina la variable de la serie, su unidad de medida, su construcción e interpretacion de sus cifras, per´ıodos observados, frecuencia de observaci´on, total de observaciones y fuente de los datos.
+Defina la variable de la serie, su unidad de medida, su construcción e interpretacion de sus cifras, perıodos observados, frecuencia de observacion, total de observaciones y fuente de los datos.
 
 
 
@@ -21,13 +21,8 @@ Defina la variable de la serie, su unidad de medida, su construcción e interpre
 library(forecast)
 library(TSA)
 library(fANCOVA)
+
 ```
-
-
-
-# 2. Analisis descriptivo de la serie y modelos propuestos:
-
-
 
 ```{r}
 Datos20=read.table("anex-EMMET-dic2019-Fabricacion de otros productos quimicos (1).csv",header=T,sep=";",skip=14,dec=",",colClasses=c(rep("NULL",4),"numeric",rep("NULL",6)))
@@ -36,42 +31,58 @@ Datos20=ts(Datos20,freq=12,start=c(2001,1))
 
 
 
+# Análisis descriptivo:
+
+Se Consideran los datos sobre el índice de producción nominal de la clase otros productos quimicos sector de manufactura, de enero de 2001 a diciembre de 2019
+(N=228), año base 2018. Ver Figura 1(a).
+
+
 ## Descomposición aditiva (tendencia)
-
-* La serie es de componentes aditivas dado que su varianza es constante alrededor de su trayectoria de largo plazo(tendencia).
-
 
 ```{r}
 Tt=decompose(Datos20)$trend
-plot(Tt,ylim=c(min(Datos20),max(Datos20)))
 ```
 
-* es visible que la serie es de tendencia creciente y que existen ciclos.
+
+```{r}
+par(mfrow=c(1,2))
+plot(Datos20, sub="(a)", lwd=1.5)
+grid()
+plot(Tt,ylim=c(min(Datos20),max(Datos20)), sub="(b)", lwd=1.5, ylab=expression(T[t]))
+grid()
+```
+
+
+**Figura 1.**  (a) Índice de producción nominal de en Colombia sector manufactura,
+Clase industrial: otros productos quimicos. Enero 2001 - diciembre 2019; (b) Tendencia según el filtro de descomposición aditiva.
+
+
+De la Figura 1(a) se deduce la presencia de estacionalidad y tendencia aditivas,  es aditiva dado que su varianza es constante alrededor de su trayectoria de largo plazo(tendencia). En la Figura 1(b) es visible que la serie es de tendencia creciente y que existen ciclos. 
 
 
 ##  grafico de boxplots comparativos de la distribucion de la serie versus perıodos del año calendario
 
-
-```{r}
-boxplot(Datos20~cycle(Datos20), names=month.abb)
-grid()
-```
-
-* vemos cómo la media en particular la mediana de la distribución de la serie según periodo del año, cambia a lo largo de un año calendario siendo menor en los meses de enero, febrero, abril y diciembre comparados con el resto del año. Tiene un crecimiento de enero a marzo y luego vuelve y baja en abril  para volver a subir en mayo manteniendose relativamente al mismo nivel en los siguientes meses hasta noviembre, para luego decaer en diciembre y retormar el siguiente año.
-
-
 ## Periodograma
 
-
 ```{r}
-periodogram(diff(Datos20),lwd=4) #periodograma sobre los logaritmos diferenciados
+par(mfrow=c(2,2))
+boxplot(Datos20~cycle(Datos20), names=month.abb, ylab="Producción nominal", xlab = "Meses del año", sub="(a)")
+grid()
+periodogram(diff(Datos20),lwd=4, sub="(b)") #periodograma sobre los logaritmos diferenciados
 abline(v=c(1:6)/12,col=2,lty=2)
 grid()
 ```
 
 
-el periodograma muestra la asociacion de la serie con cinco componentes periodicas (por valor alto del periodograma en esas frecuencias): en las frecuencias 1/12 y 2/12, 3/12, 4/12, 6/12.
+**Figura 2.** (a) Boxplots: distribución por meses de la serie. (b) Periodograma
+sobre las diferencias de la serie.
 
+De la figura 2(a) en los boxplots comparativos se ve cómo la media (o mediana) de la distribución de la serie según el periodo del año, cambia a lo largo de un año calendario siendo menor en los meses de enero, febrero, abril y diciembre comparados con el resto del año. Tiene un crecimiento de enero a marzo y luego vuelve y baja en abril  para volver a subir en mayo manteniendose relativamente al mismo nivel en los siguientes meses hasta noviembre, para luego decaer en diciembre y retormar el siguiente año; se confirma que existe un patrón periódico anual con una forma constante en el tiempo.
+
+
+
+
+De la figura 2(b) Periodograma: muestra la asociacion de la serie con cinco componentes periodicas (valor alto del periodograma en esas frecuencias): en las frecuencias 1/12 y 2/12, 3/12, 4/12, 6/12. El periodograma reafirma la existencia de componente estacional.
 
 # justifique por que existe componente estacional y si su forma es constante o no en el tiempo. 
 
@@ -93,7 +104,6 @@ plot(Datos20, xlim=c(2016,2019))
 
 ```
 
-Estamos en desacuerdo, lo respondemos más tarde.
 
 ## la tendencia se puede ajustar globalmente o si es local.
 
@@ -105,7 +115,7 @@ Estamos en desacuerdo, lo respondemos más tarde.
 
 * Hay presencia de ciclos en la serie a tráves del tiempo ya que al aplicar la descomposición aditiva y obtener la tendencia, no se observa una curva suave que describa la tendencia de la serie.
 * Hay aproximadamente entre 4 y 5 ciclos en la serie a través del tiempo (montañas).
-* No hay presencia de cambios estructurales en la serie.
+* Parace haber posible cambio estructural en la serie en el 2015 ya que el nivel de la serie cambia un poco a partir de ese año.
 
 
 
@@ -116,9 +126,28 @@ Estamos en desacuerdo, lo respondemos más tarde.
 # Modelos propuestos
 
 
-
-
 Por el análisis descriptivo, para los modelos globales la tendencia puede ser ajustada por un polinomio de grado $p = 2, 3$ y la componente estacional puede representarse como un factor y por tanto usar  variables indicadoras en los modelos globales. Se proponen los siguientes modelos de regresión, donde t es el índice de tiempo y $I_{i,t}$ es la indicadora del trimestre i en el tiempo t.
+
+
+$$\text{Tabla 1. Ecuación de los modelos propuestos}$$
+$$\begin{array}{|c|}
+\hline
+\text{ Modelo 1: Modelo cuadrático estacional con indicadoras, mes de referencia diciembre}\\
+Y_t=\beta_0+\beta_1t+\beta_2t^2+\sum_{i=1}^{11}\delta_iI_{i,t}+E_t, ~~~ E_t \sim iid N(0, \sigma^2)\\
+\hline
+\text{Modelo 2: Modelo cúbico estacional con indicadoras, mes de referencia diciembre}\\
+Y_t=\beta_0+\beta_1t+\beta_2t^2+\beta_3t^3+\sum_{i=1}^{11}\delta_iI_{i,t}+E_t, ~~~ E_t \sim iid N(0, \sigma^2)\\
+\hline
+\text{Modelos 3: Descomposición aditiva & Loess cuadrático}\\
+\text{En la vecindad de un tiempo} ~t_k~ \text{donde se quiere ajustar} 
+Y_t = \beta_{0,k} + \beta_{1,k}t + \beta_{2,k}t^2 + \sum_{i=1}^{12}\delta_i I_{i,t} +  E_t, ~~ E_t \sim iid N(0,\sigma^2) \\
+\text{para todo t vecino a} ~~t_k,~~ \text{con} \sum_{i=1}^{12}\delta_i=0,~~~ \beta_{0,k},~\beta_{1,k}~y~\beta_{2,k}~~ \text{los parámetros de la parábola local en la vecindad de} ~~t_k\\
+\hline
+\text{Modelo 4: Suavizamiento exponencial Holt-Winters aditivo}\\
+Y_{t+h} = \beta_{0,t} + \beta_{1,t}\times h + \sum_{i=1}^{12}\delta_{i,t} I_{i,t+h} +  E_{t+h}, ~~ E_t \sim iid N(0,\sigma^2),\text{con} \sum_{i=1}^{12}\delta_{i,t}=0,~~\beta_{0,t}~y~\beta_{1,t}~y~\delta_{i,t}, \text{el nivel en} ~~t,~~\\
+\text{la pendiente en} ~~t~~ \text{y los efectos estacionales en t, respectivamente, cambiando lentamente en el tiempo.}\\
+\hline
+\end{array}$$
 
 
 ## Modelo 1: Modelo cuadrático estacional con indicadoras, mes de referencia diciembre
@@ -139,9 +168,14 @@ En la vecindad de un tiempo $t_k$ donde se quiere ajustar, $Y_t = \beta_{0,k} + 
 $Y_{t+h} = \beta_{0,t} + \beta_{1,t}\times h + \sum_{i=1}^{12}\delta_{i,t} I_{i,t+h} +  E_{t+h}, ~~ E_t \sim iid N(0,\sigma^2)$, con $\sum_{i=1}^{12}\delta_{i,t}=0,~~\beta_{0,t}~y~\beta_{1,t}~y~\delta_{i,t}$, el nivel en $t$, la pendiente en $t$ y los efectos estacionales en $t$, respectivamente, cambiando lentamente en el tiempo.
 
 
-
+# Ajustes
 
 ## Ajuste de los modelos con validación cruzada
+
+Se implementa la estrategia de validación cruzada excluyendo del ajuste los últimos 
+$m = 12$ datos, que comprende de enero de 2001 a diciembre de 2018 por tanto, la validación cruzada se hará con los pronósticos ex-post
+de estos últimos.
+
 
 
 ```{r}
@@ -158,7 +192,6 @@ yt <- ts(Datos20[t], frequency = 12, start=c(2001, 1))
 ```
 
 
-* Definiendo factor para estacionalidad pero solo para la regresion lineal modelo 1
 
 * Creación de las variables indicadoras para los datos de muestra
 ```{r}
@@ -211,7 +244,11 @@ I11n=mesnuevo[,11]
 
 ```{r}
 mod1 <- lm(yt~t+I(t^2)+I1+I2+I3+I4+I5+I6+I7+I8+I9+I10+I11)
-summary(mod1)
+resumen1 <- summary(mod1)
+```
+
+```{r}
+kbl(dt, booktabs = T)%>%column_spec(1, bold = T)%>%save_kable("my_latex_table.png")
 ```
 
 
@@ -265,8 +302,31 @@ deltas_i=factoresdeltai(descom=descom,s=12,estacionini=1) #Obteniendo los s fact
 
 
 #el período es s=12 y la serie arranca en estación 1
-data.frame(deltas_i)
+deltas <- data.frame(deltas_i)
+deltas
 ```
+
+
+$$\begin{array}{| c | c | c | c| c |}
+\hline
+i& \hat{\delta}_i\\
+\hline
+1&-10.8780433\\
+2&-2.3143178\\
+3&4.3650940\\
+4&-0.5319649\\
+5&4.3979371\\
+6&2.0783292\\
+7&0.7969567\\
+8&1.2373979\\
+9&4.6148489\\
+10&2.5229371\\
+11&1.0633783\\
+12&-7.3525531\\
+\hline
+suma & 0\\
+\hline
+\end{array}$$
 
 
 
@@ -309,7 +369,7 @@ alfa.optim2=mod3$pars$span #guardando el valor óptimo del parámetro alfa
 ### Modelo de tendencia con cambio de nivel y pendiente, aditiva a factor estacional con efectos que evolucionan lentamente en el tiempo
 
 ```{r}
-mod4=HoltWinters(yt,seasonal="additive") #Suavizamiento con valores ?ptimos en par?metros 𝜶, 𝜷, 𝜸
+mod4=HoltWinters(yt,seasonal="additive") #Suavizamiento con valores Optimos en parametros 𝜶, 𝜷, 𝜸
 mod4
 ```
 
