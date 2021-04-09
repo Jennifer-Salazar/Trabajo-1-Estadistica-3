@@ -1,5 +1,5 @@
 
-Estimate	Std. Error	t value	Pr(>|t|)
+Parametro	Estimación	Error_estandar	T_0	P(|T_202|>|T_0|)
 (Intercept)	35.8242551	1.2250562	29.242949	0.0000000
 t	0.1319807	0.0174478	7.564309	0.0000000
 I(t^2)	0.0007051	0.0000779	9.055350	0.0000000
