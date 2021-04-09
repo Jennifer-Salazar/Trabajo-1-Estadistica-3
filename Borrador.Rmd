@@ -25,17 +25,13 @@ library(fANCOVA)
 
 
 
-```{r}
-Datos20
-```
-
-
 # 2. Analisis descriptivo de la serie y modelos propuestos:
 
 
 
 ```{r}
-plot(Datos20)
+Datos20=read.table("anex-EMMET-dic2019-Fabricacion de otros productos quimicos (1).csv",header=T,sep=";",skip=14,dec=",",colClasses=c(rep("NULL",4),"numeric",rep("NULL",6)))
+Datos20=ts(Datos20,freq=12,start=c(2001,1))
 ```
 
 
@@ -661,7 +657,7 @@ Se observa una distribución relativamente homogénea de los residuos alrededor 
 No hay evidencia de carencia de ajuste severa en las componentes estructurales (o sea en tendencia y estacionalidad), pues en los residuos vs. valores ajustados no se observan patrones claros con forma de U o de W que indiquen mal ajuste de la tendencia, ni patrones periódicos en las gráficas de las series de tiempo de residuos de ajuste que indiquen mal ajuste de la estacionalidad.
 
 
-* ¿Hay ciclos presentes en los residuales? ¿qu´e se deriva de estos patrones?
+* ¿Hay ciclos presentes en los residuales? ¿qué se deriva de estos patrones?
 
 En las series de tiempo de los residuos de los modelos globales hay evidencia de ciclos no explicados (los cuales se dan centrados en cero), esto implica que los errores en los modelos globales, separados un periodo en el tiempo, están positivamente correlacionados, es decir, $Corr(E_t,E_{t+1}) > 0$, por lo cual ya no es válido el supuesto de independencia.
 
@@ -689,6 +685,7 @@ Modelo 1
 
 ```{r}
 ytpron1 <- predict(mod1, newdata=data.frame(t=tnuevo, I1=I1n, I2=I2n, I3=I3n, I4=I4n, I5=I5n, I6=I6n, I7=I7n, I8=I8n, I9=I9n, I10=I10n, I11=I11n), interval="prediction")
+ytpron1 <- ts(ytpron1,freq=12,start=c(2019,1))
 ytpron1
 ```
 
@@ -696,6 +693,7 @@ Modelo 2
 
 ```{r}
 ytpron2 <- predict(mod2, newdata=data.frame(t=tnuevo, I1=I1n, I2=I2n, I3=I3n, I4=I4n, I5=I5n, I6=I6n, I7=I7n, I8=I8n, I9=I9n, I10=I10n, I11=I11n), interval="prediction")
+ytpron2 <- ts(ytpron2,freq=12,start=c(2019,1))
 ytpron2
 ```
 
@@ -718,7 +716,6 @@ Modelo 4
 ```{r}
 pronos4 <- predict(mod4, n.ahead=12,prediction=T,level=0.95)
 ytpron4 <- pronos4[,1] #sólo los pronósticos puntuales del suavizamiento
-pronos4
 ```
 
 Preguntas orientadas
@@ -738,10 +735,108 @@ La producción nominal de la categoría otros productos químicos para el mes de
 * ¿Cuál es la interpretación de las medidas MAE, MAPE y RMSE? ¿según estas medidas cuál modelo pronostica mejor?
 
 
+(....Poner los sigueintes resultados en una tabla..las medidas de pronosticos....)
+
+# Medidas en todos los modelos
+
+```{r}
+accuracy(ytpron1,ytnuevo) #Modelo 1
+accuracy(ytpron2,ytnuevo) #Modelo 2
+accuracy(ytpron3,ytnuevo) #Modelo 3
+accuracy(ytpron4,ytnuevo) #Modelo 4
+```
+
+Interpretaciones:
+
+  - Modelo 1:
+  
+  En promedio en cada pronostico se estima un error de +- 3.153708 puntos del indice de producción nominal según el RMSE y de +- 2.366654 puntos del indice de producció nominal según MAE, mientras que MAPE estima que en promedio cada pronostico se comete un error de +-2.338% con relación al valor real del indice de producción nominal, todo esto en el modelo de regresión cuadrático con variables indicadores
+  
+     
+  - Modelo 2:
+  
+  En promedio en cada pronostico se estima un error de +- 3.620468 puntos del indice de producción nominal según el RMSE y de +- 2.746457 puntos del indice de producció nominal según MAE, mientras que MAPE estima que en promedio cada pronostico se comete un error de +- 2.71% con relación al valor real del indice de producción nominal, todo esto en el modelo de regresión cúbico con variables indicadores.
+  
+  
+   - Modelo 3:
+  
+  En promedio en cada pronostico se estima un error de +- 3.014298 puntos del indice de producción nominal según el RMSE y de +- 2.33551 puntos del indice de producció nominal según MAE, mientras que MAPE estima que en promedio cada pronostico se comete un error de +- 2.28% con relación al valor real del indice de producción nominal, todo esto en el modelo de Filtro de decomposición combinado Loess cuadrático.
+  
+  
+   - Modelo 4:
+  
+
+  En promedio en cada pronostico se estima un error de +- 3.187973 puntos del indice de producción nominal según el RMSE y de +- 2.670446 puntos del indice de producció nominal según MAE, mientras que MAPE estima que en promedio cada pronostico se comete un error de +- 2.53% con relación al valor real del indice de producción nominal, todo esto en el modelo de SEHW.
+  
+  
+  
 * Con base en la amplitud media y cobertura de los I.P ¿qué se concluye?
+
+
+(... Tablas de amplitud y cobertura en los modelos ...)
+
+
+```{r}
+#Creando función usuario amplitud() para calcular la amplitud promedio de los I.P en pronósticos ex – post
+amplitud=function(LIP,LSP){
+a=LSP-LIP
+am=mean(a)
+am
+}
+#Creando función usuario cobertura() para calcular la cobertura de los I.P en pronósticos ex – post
+cobertura=function(real,LIP,LSP){
+I=ifelse(real>=LIP & real<=LSP,1,0)
+p=mean(I)
+p
+}
+```
+
+
+Modelo 1:
+
+```{r}
+amplitud(LIP=ytpron1[,2],LSP=ytpron1[,3])
+cobertura(real=ytnuevo,LIP=ytpron1[,2],LSP=ytpron1[,3])
+```
+
+
+Modelo 2:
+
+
+```{r}
+amplitud(LIP=ytpron2[,2],LSP=ytpron2[,3])
+cobertura(real=ytnuevo,LIP=ytpron2[,2],LSP=ytpron2[,3])
+```
+
+Modelo 4:
+
+```{r}
+#Precisión pronósticos por I.P Holt-Winters
+
+amplitud(LIP=pronos4[,3],LSP=pronos4[,2])
+cobertura(real=ytnuevo,LIP=pronos4[,3],LSP=pronos4[,2])
+```
+
+Según este criterio todos los modelos que tienen intervalo de predicción tienen una cubertura del 100%, es decir todos los valores reales caen en el intervalo.
+
+El modelo 1 es el de menor amplitud, por lo tanto según este criterio seria el mejor modelo.
+
+
+
 
 * ¿Qué se concluye de la figura comparativa de los pronósticos puntuales?
 
+
+```{r}
+plot(ytnuevo,lwd=2, col=1, type="b", pch=1, xlab="Periodo del año")
+lines(ytpron1[,1],lwd=2, col=2, type="b", pch=2)
+lines(ytpron2[,1],lwd=2, col=3, type="b", pch=3)
+lines(ytpron3,lwd=2,col=4, type="b", pch=4)
+lines(ytpron4,lwd=2,col=5, type="b", pch=5)
+legend("bottomright",legend=c("Real","Pronostico modelo1", "Pronostico modelo2", "Pronostico modelo3", "Pronostico modelo4"),col=1:5,lwd=2, pch=1:5, cex=0.8)
+```
+
+* En base a la gráfica de pronosticos se escoge como mejor modelo el modelo 3.
 
 
 # 6. Conclusiones del trabajo: 
