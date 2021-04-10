@@ -98,9 +98,13 @@ De la figura 2(b) Periodograma: muestra la asociacion de la serie con cinco comp
 ```{r}
 par(mfrow=c(2,2))
 plot(Datos20, xlim=c(2001,2005))
+grid()
 plot(Datos20, xlim=c(2006,2010))
+grid()
 plot(Datos20, xlim=c(2011,2015))
+grid()
 plot(Datos20, xlim=c(2016,2019))
+grid()
 
 ```
 
@@ -172,9 +176,7 @@ $Y_{t+h} = \beta_{0,t} + \beta_{1,t}\times h + \sum_{i=1}^{12}\delta_{i,t} I_{i,
 
 ## Ajuste de los modelos con validación cruzada
 
-Se implementa la estrategia de validación cruzada excluyendo del ajuste los últimos 
-$m = 12$ datos, que comprende de enero de 2001 a diciembre de 2018 por tanto, la validación cruzada se hará con los pronósticos ex-post
-de estos últimos.
+Se implementa la estrategia de validación cruzada excluyendo del ajuste los últimos $m = 12$ datos, que comprende de enero de 2001 a diciembre de 2018 por tanto, la validación cruzada se hará con los pronósticos ex-post de estos últimos.
 
 
 
@@ -610,7 +612,7 @@ Modelo&p&AIC&BIC\\
 \hline
 \end{array}$$
 
-Con relación a la calidad de ajuste, vemos un ajuste muy similar entre los modelos, todos consiguen seguir muy bien los patrones de tendencia, estacionalidad y al parecer también los ciclos. Por otro lado, los valores de AIC y BIC también son similares aunque numéricamente resulta menor el AIC en el modelo 3 y el BIC también coincide en el mismo modelo. Modelo de regresión cubico con indicadoras tiene el mayor en AIC y BIC (aunque como ya se indicó, el grado del polinomio no es significativo).
+Con relación a la calidad de ajuste, vemos un ajuste muy similar entre los modelos, todos consiguen seguir muy bien los patrones de tendencia, estacionalidad y al parecer también los ciclos. Por otro lado, los valores de AIC y BIC también son similares aunque numéricamente resulta menor el del modelo 3, tanto AIC y BIC coinciden en el mismo modelo. El modelo de regresión cubico con indicadoras tiene el mayor en AIC y BIC (aunque como ya se indicó, el grado del polinomio no es significativo).
 
 #############################################################################
 
@@ -876,7 +878,7 @@ En las figuras presentadas en las gráficas de residuos vs. tiempo y vs. valores
 
 * ¿Es válido el supuesto de varianza constante en los 4 modelos?
 
-Se observa una distribución relativamente homogénea de los residuos alrededor de cero, es decir, no hay evidencias contrariando el supuesto de varianza constante para los errores de ajuste 
+Se observa una distribución relativamente homogénea de los residuos alrededor de cero, es decir, no hay evidencias contrariando el supuesto de varianza constante para los errores de ajuste. 
 
 
 * ¿Hay patrones en los residuos que indiquen carencia de ajuste de los modelos en la tendencia y/o la estacionalidad?
@@ -898,7 +900,7 @@ En general todos los modelos parecen no tener evidencia en contra de los supuest
 
 * ¿Cuál es el mejor modelo de los cuatro, de acuerdo al análisis de los residuales?
 
-Con todo lo antes dicho, de los 4 modelos, se considera que los modelos de ajuste local son mejores, ya que en ellos no hay patrones cíclicos y por tanto dan indicios de cumplir el supuesto de independencia.
+Con todo lo antes dicho, de los 4 modelos, se considera que los modelos de ajuste local son mejores, ya que en ellos no hay patrones cíclicos y por tanto dan indicios de no incumplir el supuesto de independencia.
 
 * Si es necesario elegir entre los locales, hasta el momento se prefiere el modelo 3 ya que le fue bien los supuestos del modelo y fue el mejor en los ajustes, solo queda mirar en los pronosticos para garantizar de que es el mejor.
 
@@ -911,7 +913,7 @@ Con todo lo antes dicho, de los 4 modelos, se considera que los modelos de ajust
 
 $$\begin{array}{| c | c | c | c| c |}
 \hline
-Modelo & Ecuacines~de~Pronósticos \\
+Modelo & Ecuaciones~de~Pronósticos \\
 \hline
 1 & \hat{Y}_{216}(L) \approx 35.8242551 + 0.1319807 (216+L) + 0.0007051 (216+L)^2	- 3.1817818 I_{1,216+L} +\\
 & 5.3069465 I_{2,216+L} + 12.0220423 I_{3,216+L}+ 7.2690612 I_{4,216+L}+ 12.1146698 I_{5,216+L}+ 9.8255350 I_{6,216+L}+\\
@@ -1190,7 +1192,7 @@ El modelo 1 es el de menor amplitud, por lo tanto según este criterio seria el 
 
 $$\begin{array}{| c | c | c | c| c |}
 \hline
-RMSE & MAE & MAPE & Amplitud & Cobertura(\text{%})\\
+RMSE & MAE & MAPE & Amplitud & Cobertura()\\
 3.153708&2.366654&2.338060&16.48278&100\\
 3.620468&2.746457&2.711682&16.94829&100\\
 3.014298&2.335510&2.283224&-&-\\
@@ -1235,7 +1237,7 @@ En esta sección debe presentar un resumen de los resultados encontrados en el r
 
 Conclusión:
 
-Teniendo como primer criterio de selección los resultados en el análisis de residuales, en segundo lugar los resultados de pronósticos y por último los de ajustes, se concluye que el mejor modelo por el momento, es el modelo 3, este no mostro evidencia en contra de los supuestos(aunque aún no se ha probado el supuesto de independencia ni el de normalidad), además capturó muy bien la dinamica de la serie, este tiene las mejores medidas de pronostico y ajuste, además de que sigue bien la tendencia, estacionalidad y variaciones ciclicas, aunque en algunos pronosticos no parece ser tan realista y confiable debido a que en la mayoria tiende a subestimar los valores y al final de los pronosticos es el modelo más alejado del valor real, por tanto se cree que podria cometer errores en pronosticos ex-ante, por lo tanto puede haberse considerado modelos 
+Teniendo como primer criterio de selección los resultados en el análisis de residuales, en segundo lugar los resultados de pronósticos y por último los de ajustes, se concluye que el mejor modelo por el momento, es el modelo 3, este no mostro evidencia en contra de los supuestos(aunque aún no se ha probado el supuesto de independencia ni el de normalidad), además capturó muy bien la dinamica de la serie, este tiene las mejores medidas de pronostico y ajuste, además de que sigue bien la tendencia, estacionalidad y variaciones ciclicas, aunque en algunos pronosticos no parece ser tan realista y confiable debido a que en la mayoria tiende a subestimar los valores y al final de los pronosticos es el modelo más alejado del valor real, por tanto se cree que podria cometer errores en pronosticos ex-ante, por lo tanto puede haberse considerado modelos. 
 
 
 
