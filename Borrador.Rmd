@@ -1211,6 +1211,7 @@ lines(ytpron1[,1],lwd=2, col=2, type="b", pch=2)
 lines(ytpron2[,1],lwd=2, col=3, type="b", pch=3)
 lines(ytpron3,lwd=2,col=4, type="b", pch=4)
 lines(ytpron4,lwd=2,col=5, type="b", pch=5)
+grid()
 legend("bottomright",legend=c("Real","Pronostico modelo1", "Pronostico modelo2", "Pronostico modelo3", "Pronostico modelo4"),col=1:5,lwd=2, pch=1:5, cex=0.8)
 ```
 

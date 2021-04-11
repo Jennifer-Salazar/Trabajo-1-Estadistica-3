@@ -391,7 +391,7 @@ amplitud(LIP=ytpron2[,2],LSP=ytpron2[,3])
 cobertura(real=ytnuevo,LIP=ytpron2[,2],LSP=ytpron2[,3])
 
 
-Modelo 4:
+#Modelo 4:
   
   #Precisión pronósticos por I.P Holt-Winters
   
